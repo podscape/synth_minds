@@ -1,6 +1,9 @@
 import os
+from urllib.parse import urlparse
+
 import PyPDF2
 from typing import Optional
+import requests
 
 
 def save_text_to_file(text: str, file_path: str) -> None:
@@ -73,7 +76,34 @@ class TextExtractor:
 
 
 
+def download_pdf(url):
+    parsed_url = urlparse(url)
+    filename = parsed_url.path.split('/')[-1]
+    filename = f"../data/{filename}"
+
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+
+        with open(filename, "wb") as f:
+            for chunk in response.iter_content(1024):
+                f.write(chunk)
+
+        print(f"PDF downloaded as {filename}")
+        return filename
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading PDF: {e}")
+        return None
+
 # use:
 if __name__ == "__main__":
+    # extractor = TextExtractor(max_chars=100000)
+    # text = extractor.extract_text("../../data/2402.13116v4.pdf")
+
+    url = "https://podscape-n87kdrzdp-infin1t3s-projects.vercel.app/aibxt.pdf"
+    filename = download_pdf(url)
     extractor = TextExtractor(max_chars=100000)
-    text = extractor.extract_text("path/to/your/file.pdf")
+    text = extractor.extract_text(filename)
+    save_text_to_file(text, "../data/extracted_text.txt")
+
