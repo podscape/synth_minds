@@ -76,10 +76,10 @@ class TextExtractor:
 
 
 
-def download_pdf(url):
+def download_pdf(url, output_dir):
     parsed_url = urlparse(url)
     filename = parsed_url.path.split('/')[-1]
-    filename = f"../data/{filename}"
+    filename = f"{output_dir}/{filename}"
 
     try:
         response = requests.get(url, stream=True)
@@ -94,6 +94,34 @@ def download_pdf(url):
 
     except requests.exceptions.RequestException as e:
         print(f"Error downloading PDF: {e}")
+        return None
+
+
+def read_file_to_string(filename):
+    # Try UTF-8 first (most common encoding for text files)
+    try:
+        with open(filename, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return content
+    except UnicodeDecodeError:
+        # If UTF-8 fails, try with other common encodings
+        encodings = ['latin-1', 'cp1252', 'iso-8859-1']
+        for encoding in encodings:
+            try:
+                with open(filename, 'r', encoding=encoding) as file:
+                    content = file.read()
+                print(f"Successfully read file using {encoding} encoding.")
+                return content
+            except UnicodeDecodeError:
+                continue
+
+        print(f"Error: Could not decode file '{filename}' with any common encoding.")
+        return None
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+        return None
+    except IOError:
+        print(f"Error: Could not read file '{filename}'.")
         return None
 
 # use:

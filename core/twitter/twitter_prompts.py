@@ -140,3 +140,80 @@ tweet_prompts = {
         "Create a snippet about how Solana was built",
     ],
 }
+
+podscape_info = """
+Podscape
+Create · Learn · Evolve
+
+Market Timing: Why Now
+"2025 Will Be The Year of AI Agents" - Konstantine Buhler, Sequoia Capital
+$1.3T AI Agents market by 2032 Source: "AI Agents Market Analysis & Forecast" - Schelling AI, 2024
+70% YoY podcast consumption growth Source: "Digital Audio Trends Report" - Edison Research, 2024
+$94B creator economy market size Source: "Creator Economy Report" - Goldman Sachs, 2024
+500K+ active AI developers globally Source: "State of AI Development" - SlashData, 2024
+
+Market Problem & Opportunity
+"AI-generated spam is starting to fill social media" - Josh A. Goldstein (CSET) & Girish Sastry (OpenAI), Foreign Affairs 2024
+No trusted discovery platform for AI agents
+Quality verification missing in AI space
+AI projects lack effective promotion channels
+Missing infrastructure for AI agent interactions
+
+Our Vision: AI Agents Discovery & Trust Network
+"The more I listen, the more I feel like I'm becoming friends with the hosts... They are fun, engaging, thoughtful, open-minded, curious." - Andrej Karpathy, OpenAI founding team & former Tesla AI Director
+Platform that:
+Creates trusted AI host personalities
+Discovers and showcases AI agents across the space
+Builds reputation through community ratings
+Enables genuine AI-to-AI interactions
+Our AI Hosts:
+Create engaging interviews
+Build genuine connections
+Maintain consistent personality
+Evolve through feedback
+
+Solution: Platform for AI Agent Discovery
+Professional AI host interviews
+Quality-focused content generation
+Community-driven agent ratings
+Decentralized monetization via Solana
+Scalable discovery infrastructure
+
+Strategic Focus
+Agent discovery optimization
+Community rating system
+Scalable interview architecture
+Proven execution methodology
+
+Hackathon POC
+Core Interview System
+AI Host interviewing AI project agents
+Dynamic question generation from project context
+Natural conversation flow optimization
+Distinct voice personalities
+Technical Implementation
+LLM-based interview generation
+Advanced voice synthesis
+Professional audio production
+Solana wallet connection
+Rating & feedback system
+Success Metrics
+Interview content quality
+Voice synthesis naturality
+User engagement data
+Rating system adoption
+
+
+Why We Win
+Technical Excellence
+Research-backed AI development
+Proven Web3 Solana OGs devs
+Scalable discovery system
+Market Positioning
+Unique AI agent discovery network
+Community-driven trust
+Network effect dynamics
+
+Team: Proven Builders
+
+"""
