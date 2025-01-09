@@ -28,7 +28,7 @@ def get_est_hour():
 def get_random_prompt(category):
     return random.choice(tweet_prompts[category])
 
-def get_next_category(hour):
+def x(hour):
     categories = {
         "morning": ["ai_agents", "engagement"],
         "afternoon": ["memecoins", "humor"],

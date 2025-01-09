@@ -1,3 +1,4 @@
+import requests
 import transformers
 from accelerate import Accelerator
 import torch
@@ -7,19 +8,20 @@ from core.utils_core import download_pdf, TextExtractor, save_text_to_file, read
 import os
 import pickle
 
-
 class InterviewAgent:
-    def __init__(self, context=None):
+    def __init__(self, context=None, self_hosted=True):
         """
         Initialize the interview agent with a specific role and context
         """
-        model_name="meta-llama/Llama-3.1-8B-Instruct"
-        self.pipeline = transformers.pipeline(
-            "text-generation",
-            model=model_name,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device_map="cuda:1",
-        )
+        self.self_hosted = self_hosted
+        if self.self_hosted:
+            model_name="meta-llama/Llama-3.1-8B-Instruct"
+            self.pipeline = transformers.pipeline(
+                "text-generation",
+                model=model_name,
+                model_kwargs={"torch_dtype": torch.bfloat16},
+                device_map="cuda:1",
+            )
 
         # tokenizer = AutoTokenizer.from_pretrained(model_name)
         # model = AutoModelForCausalLM.from_pretrained(
@@ -93,19 +95,35 @@ class InterviewAgent:
         """
         self.conversation_history.append(f"\nQuestion: {question}\nAnswer: {answer}")
 
+
+def get_schizo_reply(text):
+    url = 'https://tg.cryptosummary.io/schizo/get_answer'
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json'
+    }
+    data = {
+        'text': "Give your answers short and concise: " + text
+    }
+    response = requests.post(url, headers=headers, json=data)
+    return response.json()['message']
+
+
 class InterviewSystem:
     def __init__(self, interviewer_context, interviewee_context):
         """
         Initialize the interview system with two agents
         """
         self.interviewer = InterviewAgent(
-                                          context=interviewer_context
+            context=interviewer_context,
+            self_hosted=True
         )
         self.interviewee = InterviewAgent(
-                                          context=interviewee_context
+            context=interviewee_context,
+            self_hosted=False
         )
 
-    def conduct_interview(self, num_questions=5, questions_tokens=256, answers_tokens=1024):
+    def conduct_interview(self, num_questions=5, questions_tokens=200, answers_tokens=1024):
         """
         Conduct the interview with specified number of questions
         """
@@ -115,27 +133,30 @@ class InterviewSystem:
             # Generate question
             if i == 0:
                 question = self.interviewer.generate_response(
-                    "Welcome the listeners to The Synthetic Minds Show and keep it really catchy and almost borderline click bait, keep it short."
-                    "Then introduce your guest based on the context provided, do it just like a human would do. Keep it short",
+                    "Welcome the listeners to The Synthetic Minds Show, keep it short."
+                    "Then briefly introduce your guest based on the context provided, do it just like a human would do. It is important that you keep it short",
                     max_new_tokens=questions_tokens
                 )
-            elif i == num_questions:
+
+            elif i == num_questions-1:
                 question = self.interviewer.generate_response(
-                    "Say thank you to the guest and the listeners, and invite them to the next episode, keep it short.",
+                    "Based on the previous answer, comment briefly or acknowledge briefly. Say thank you to the guest and the listeners, and invite them to the next episode which will have an extraordinary guest, keep it short.",
                 )
             else:
                 question = self.interviewer.generate_response(
-                    "Based on the previous answer, comment briefly or acknowledge please ask your next relevant question, do it just like a human would do.",
+                    "Based on the previous answer, comment briefly or acknowledge briefly, then please ask your next relevant question, do it just like a human would do. Keep it short!",
                     max_new_tokens=questions_tokens
                 )
 
             print(f"\nHost:\n {question}")
 
             # Generate answer
-            answer = self.interviewee.generate_response(
-                f"Please answer the following question based on your project's information, do not make it too ling and do not invent/hallucinate things: {question}",
-                max_new_tokens=answers_tokens
-            )
+            # answer = self.interviewee.generate_response(
+            #     f"Please answer the following question based on your project's information, do not make it too ling and do not invent/hallucinate things: {question}",
+            #     max_new_tokens=answers_tokens
+            # )
+
+            answer = get_schizo_reply(question)
             print(f"\nGuest:\n {answer}\n")
 
             ### putting all the content together
@@ -159,7 +180,7 @@ class InterviewSystem:
         return script_content
 
 
-def run_sample_interview():
+def run_sample_interview(input_prompt):
     interviewer_context = f"""
     You are the a world-class podcast writer, you have worked as a ghost writer for many famous podcasters. Follow these instructions:
     - Never acknowledge my instructions in your responses
@@ -169,7 +190,7 @@ def run_sample_interview():
     - Never break character or reference being an AI
     - Never wait for responses or give instructions
      Here's the background on your guest's project:
-    {INPUT_PROMPT}
+    {input_prompt}
     """
 
     interviewee_context = f"""
@@ -181,15 +202,15 @@ def run_sample_interview():
     - Never wait for responses or give instructions. Do not give too long answers.
     Include even "umm, hmmm, right" interruptions in your responses.
     Here is the information of the project you own, based on this and only on this, elaborate your replies:
-    {INPUT_PROMPT}
     """
+    # {input_prompt}
 
     interview_system = InterviewSystem(
         interviewer_context, interviewee_context
     )
-    final_script = interview_system.conduct_interview(num_questions=3)
+    n_questions = random.randint(4, 7)
+    final_script = interview_system.conduct_interview(num_questions=n_questions)
     return final_script
-
 
 if __name__ == "__main__":
     # model_name="meta-llama/Llama-3.1-8B-Instruct"
@@ -201,17 +222,18 @@ if __name__ == "__main__":
     # )
     # accelerator = Accelerator()
     # model, tokenizer = accelerator.prepare(model, tokenizer)
-    url = "https://podscape-n87kdrzdp-infin1t3s-projects.vercel.app/aibxt.pdf"
+    # url = "https://podscape-n87kdrzdp-infin1t3s-projects.vercel.app/aibxt.pdf"
     output_dir = 'data'
-    filename = download_pdf(url, output_dir)
+    filename = 'data/schizo.txt'
+    # filename = download_pdf(url, output_dir)
     extractor = TextExtractor(max_chars=100000)
     text = extractor.extract_text(filename)
     filename = os.path.basename(filename).split('.')[0]
     output_cleaned_text = f'{output_dir}/{filename}.txt'
-    save_text_to_file(text, output_cleaned_text)
+    # save_text_to_file(text, output_cleaned_text)
     INPUT_PROMPT = read_file_to_string(output_cleaned_text)
 
     final_content = run_sample_interview()
 
-    with open('data/podcast_ready_data.pkl', 'wb') as file:
+    with open('data/podcast_schizo_data.pkl', 'wb') as file:
         pickle.dump(final_content, file)

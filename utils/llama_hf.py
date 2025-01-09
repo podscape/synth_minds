@@ -7,7 +7,10 @@ class AsyncTextGenerator:
         self.generator = None
 
     async def initialize(self):
-        self.generator = pipeline("text-generation", model=self.model_name, device='cuda:1')
+        self.generator = pipeline(
+            task = "text-generation",
+            model=self.model_name,
+            device='cuda:1')
 
     async def generate_text(self, prompt):
         if not self.generator:
